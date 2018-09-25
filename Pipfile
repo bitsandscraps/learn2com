@@ -1,0 +1,18 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+tensorflow = {path = "/home/wisrl/tensorflow/tensorflow_pkg_gpu/tensorflow-1.10.1-cp36-cp36m-linux_x86_64.whl"}
+argparse = "*"
+"h5py" = "*"
+
+[dev-packages]
+pylint = "*"
+jediepcserver = {path = "/home/wisrl/.emacs.d/straight/build/jedi-core"}
+ptpython = "*"
+pytest = "*"
+
+[requires]
+python_version = "3.6"
