@@ -72,8 +72,8 @@ def create_models(input_bits: int, *,
         last_layers = [last_layer, last_layer]
 
     # decoder
-    last_layers = [Conv1D(4, 11, data_format='channels_first', padding='same', activation='sigmoid', kernel_regularizer=l2(l2_reg))(last_layer) for last_layer in last_layers]
-    debug_tensors(LOGGER, last_layers, 'conv1')
+    #last_layers = [Conv1D(4, 11, data_format='channels_first', padding='same', activation='sigmoid', kernel_regularizer=l2(l2_reg))(last_layer) for last_layer in last_layers]
+    #debug_tensors(LOGGER, last_layers, 'conv1')
     last_layers = [Flatten(data_format='channels_first')(last_layer) for last_layer in last_layers]
     debug_tensors(LOGGER, last_layers, 'flatten')
     last_layers = [Dense(256, activation='sigmoid')(last_layer) for last_layer in last_layers]
