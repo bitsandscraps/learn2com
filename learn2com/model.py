@@ -12,7 +12,7 @@ from learn2com.channel import Normalize, GaussianNoise, Delay, PhaseVariance
 from learn2com.debug_tools import debug_tensor, debug_tensors, debug_array
 
 LOGGER = logging.getLogger(__name__)
-REGULARIZE = False
+REGULARIZE = True
 
 def create_models(input_bits: int, *,
                   training_snr: float,
