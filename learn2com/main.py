@@ -39,7 +39,7 @@ def parse_args() -> dict:
     parser.add_argument('--dataset-size', type=int, default=1000000)
     parser.add_argument('--training-set-ratio', type=float, default=0.8)
     parser.add_argument('--log-level', type=str, default='info')
-    parser.add_argument('--minibatch', type=int, default=64)
+    parser.add_argument('--minibatch', type=int, default=1024)
     parser.add_argument('--input-bits', type=int, default=128)
     parser.add_argument('--snr', type=float, default=5.0)
     parser.add_argument('--dropout-rate', type=float, default=0.01)
