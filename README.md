@@ -8,11 +8,11 @@ Original Paper: [Learning to Communicate: Channel Auto-encoders, Domain Specific
    git clone https://github.com/bitsandscraps/learn2com.git
    cd learn2com
    ```
-* Install the virtual evironment. I use `pipenv` but you may use whatever program you want.
+* Install the virtual evironment. I use [`pipenv`](https://github.com/pypa/pipenv) but you may use whatever program you want.
    ``` bash
    pipenv --three
    ```
-   If you want to use `pipenv`, you need to edit the [Pipfile](Pipfile).
+   To use `pipenv`, you need to edit the [Pipfile](Pipfile).
 
 ## Run the Program
 
