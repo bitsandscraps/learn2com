@@ -4,16 +4,15 @@ Original Paper: [Learning to Communicate: Channel Auto-encoders, Domain Specific
 ## Installation
 * Clone the repo and cd into it.
 
-``` bash
-git clone https://github.com/bitsandscraps/learn2com.git
-cd learn2com
-```
+   ``` bash
+   git clone https://github.com/bitsandscraps/learn2com.git
+   cd learn2com
+   ```
 * Install the virtual evironment. I use `pipenv` but you may use whatever program you want.
-
-``` bash
-pipenv --three
-```
-If you want to use `pipenv`, you need to edit the [Pipfile](Pipfile).
+   ``` bash
+   pipenv --three
+   ```
+   If you want to use `pipenv`, you need to edit the [Pipfile](Pipfile).
 
 ## Run the Program
 
