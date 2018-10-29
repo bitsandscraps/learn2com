@@ -12,7 +12,8 @@ Original Paper: [Learning to Communicate: Channel Auto-encoders, Domain Specific
    ``` bash
    pipenv --three
    ```
-   To use `pipenv`, you need to edit the [Pipfile](Pipfile).
+   To use `pipenv`, you need to first erase the line that has `tensorflow` in the [Pipfile](Pipfile),
+   and then re-install `tensorflow` in any way you want.
 
 ## Run the Program
 
