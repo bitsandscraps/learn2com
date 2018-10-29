@@ -9,20 +9,21 @@ from learn2com.debug_tools import debug_array
 
 LOGGER = logging.getLogger(__name__)
 
+
 def test_model():
     """ Test if any errors occur while manipulating models """
     tf.reset_default_graph()
     input_bits = 8
     training_set = np.ones((100, input_bits))
-    training_set = training_set.astype(dtype=np.bool_)
+    training_set = training_set.astype(dtype=np.float_)
     debug_array(LOGGER, training_set, 'train')
     kwargs = parse_args()
     kwargs['training_snr'] = kwargs['snr']
     kwargs['test_snrs'] = list(range(10))
     kwargs['input_bits'] = input_bits
+    print(kwargs)
     training_model, _ = create_models(**kwargs)
-    with tf.Session():
-        training_model.compile(optimizer=tf.train.AdamOptimizer(), loss='mse',
-                               metrics=[metric_bit_error_rate])
-        training_model.fit(training_set, training_set, batch_size=1, epochs=1)
-    assert True
+    training_model.compile(optimizer=tf.train.AdamOptimizer(), loss='mse',
+                           metrics=[metric_bit_error_rate])
+    training_model.fit(training_set, training_set, batch_size=64, epochs=10)
+    print(training_model.predict(training_set))

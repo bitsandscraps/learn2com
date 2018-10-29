@@ -3,7 +3,7 @@
 from typing import Callable
 import numpy as np
 import tensorflow as tf
-from learn2com.channel import Normalize, conv1d
+from learn2com.channel import Normalize, conv1d, Delay
 
 def compute_layer(layer: Callable, input_data: np.ndarray) -> np.ndarray:
     """ Feeds `layer` with `input_data` and returns the output """

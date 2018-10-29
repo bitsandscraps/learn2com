@@ -14,6 +14,11 @@ from learn2com.debug_tools import debug_tensor, debug_tensors, debug_array
 LOGGER = logging.getLogger(__name__)
 REGULARIZE = True
 
+def create_layers(layer: Layer, previous_layers: List[Layer]) -> List[Layer]:
+    """ Apply the new layer to the list of previous layers """
+    return [layer(previous_layer) for previous_layer in previous_layers]
+
+
 def create_models(input_bits: int, *,
                   training_snr: float,
                   test_snrs: Iterable[float],
@@ -21,6 +26,7 @@ def create_models(input_bits: int, *,
                   taps: int,
                   phase_bound: float,
                   l2_reg: float,
+                  activation: str,
                   **_) -> Tuple[Layer, List[Layer]]:
     """ Create training and test model for learn2com
 
@@ -32,56 +38,66 @@ def create_models(input_bits: int, *,
              number of output layers of test_model == len(test_snrs)
     """
     input_layer: Layer
-    input_layer = Input(shape=(input_bits,))
+    last_layer: Layer
+    input_layer = last_layer = Input(shape=(input_bits,))
     debug_tensor(LOGGER, input_layer, 'input')
 
     # encoder
-    last_layer: Layer
-    last_layer = Dense(256, activation='sigmoid')(input_layer)
-    debug_tensor(LOGGER, last_layer, 'dense0')
-    last_layer = Dense(256, activation='sigmoid')(last_layer)
-    debug_tensor(LOGGER, last_layer, 'dense1')
-    last_layer = Dense(256, activation='sigmoid')(last_layer)
-    debug_tensor(LOGGER, last_layer, 'dense2')
-    last_layer = Reshape((256, 1))(last_layer)
-    debug_tensor(LOGGER, last_layer, 'reshape0')
-    last_layer = Conv1D(2, 11, activation='sigmoid', padding='same')(last_layer)
-    debug_tensor(LOGGER, last_layer, 'conv0')
-    last_layer = Permute((2, 1))(last_layer)
-    debug_tensor(LOGGER, last_layer, 'permute')
+    encoder_structure: List[Tuple[str, Layer]]
+    encoder_structure = [
+        ('dense0', Dense(256, activation=activation, kernel_regularizer=l2(l2_reg))),
+        ('dense1', Dense(256, activation=activation, kernel_regularizer=l2(l2_reg))),
+        ('dense2', Dense(256, activation=activation, kernel_regularizer=l2(l2_reg))),
+        ('reshape', Reshape((256, 1))),
+        ('conv0', Conv1D(2, 11, activation=activation, padding='same',
+                         kernel_regularizer=l2(l2_reg))),
+        ('permute', Permute((2, 1))),
+    ]
+
+    for name, layer in encoder_structure:
+        last_layer: Layer = layer(last_layer)
+        debug_tensor(LOGGER, last_layer, name)
 
     if REGULARIZE:
         # add regularizers
         last_layer = Normalize()(last_layer)
         debug_tensor(LOGGER, last_layer, 'normalize')
+
         training_last_layer = GaussianNoise(training_snr)(last_layer)
         debug_tensor(LOGGER, last_layer, 'awgn')
-        """
-        training_last_layer = Dropout(dropout_rate)(training_last_layer)
-        debug_tensor(LOGGER, last_layer, 'dropout')
-        training_last_layer = Delay(taps)(training_last_layer)
-        debug_tensor(LOGGER, last_layer, 'delay')
-        training_last_layer = PhaseVariance(phase_bound)(training_last_layer)
-        debug_tensor(LOGGER, last_layer, 'pv')
-        """
-        # test model does not need additional regularizers
+
         last_layers = [GaussianNoise(snr)(last_layer) for snr in test_snrs]
         # add training_last_layer to last_layers just for convenience
         last_layers.insert(0, training_last_layer)
+
+        regularizer_structure: List[Tuple[str, Layer]]
+        regularizer_structure = [
+            ('dropout', Dropout(dropout_rate)),
+            # ('delay', Delay(taps)),
+            ('pv', PhaseVariance(phase_bound)),
+        ]
+
+        for name, layer in regularizer_structure:
+            last_layers = create_layers(layer, last_layers)
+            debug_tensors(LOGGER, last_layers, name)
+
     else:
-        last_layers = [last_layer, last_layer]
+        last_layers = [last_layer, last_layer, last_layer]
 
     # decoder
-    #last_layers = [Conv1D(4, 11, data_format='channels_first', padding='same', activation='sigmoid', kernel_regularizer=l2(l2_reg))(last_layer) for last_layer in last_layers]
-    #debug_tensors(LOGGER, last_layers, 'conv1')
-    last_layers = [Flatten(data_format='channels_first')(last_layer) for last_layer in last_layers]
-    debug_tensors(LOGGER, last_layers, 'flatten')
-    last_layers = [Dense(256, activation='sigmoid')(last_layer) for last_layer in last_layers]
-    debug_tensors(LOGGER, last_layers, 'dense3')
-    last_layers = [Dense(256, activation='sigmoid')(last_layer) for last_layer in last_layers]
-    debug_tensors(LOGGER, last_layers, 'dense4')
-    last_layers = [Dense(input_bits, activation='sigmoid')(last_layer) for last_layer in last_layers]
-    debug_tensors(LOGGER, last_layers, 'dense5')
+    decoder_architecture = [
+        ('conv1', Conv1D(4, 11, data_format='channels_first', padding='same',
+                         activation=activation, kernel_regularizer=l2(l2_reg))),
+        ('flatten', Flatten(data_format='channels_first')),
+        ('dense3', Dense(256, activation=activation, kernel_regularizer=l2(l2_reg))),
+        ('dense4', Dense(256, activation=activation, kernel_regularizer=l2(l2_reg))),
+        ('dense5', Dense(input_bits, activation=None, kernel_regularizer=l2(l2_reg))),
+    ]
+
+    for name, layer in decoder_architecture:
+        last_layers = create_layers(layer, last_layers)
+        debug_tensors(LOGGER, last_layers, name)
+
     training_last_layer = last_layers[0]
     test_last_layers = last_layers[1:]
 
@@ -105,6 +121,6 @@ def metric_bit_error_rate(y_true: tf.Tensor, y_pred: tf.Tensor) -> tf.Tensor:
     debug_tensor(LOGGER, ytrue_cast, 'ber_tr_c')
     compare: tf.Tensor = K.equal(decoded, ytrue_cast)
     debug_tensor(LOGGER, compare, 'ber_comp')
-    result = K.mean(compare)
+    result = 1 - K.mean(compare)
     debug_tensor(LOGGER, result, 'ber_rslt')
     return result

@@ -91,9 +91,10 @@ class Delay(tf.keras.layers.Layer):
         self._taps = taps
         super().__init__(*args, **kwargs)
 
-    def call(self, inputs: tf.Tensor) -> tf.Tensor:
+    def call(self, inputs: tf.Tensor, delay: tf.Tensor = None) -> tf.Tensor:
         debug_tensor(LOGGER, inputs, 'Del.in')
-        delay: tf.Tensor = K.random_uniform([self._taps], -1.0, 1.0)
+        if delay is None:
+            delay: tf.Tensor = K.random_uniform([self._taps], -1.0, 1.0)
         debug_tensor(LOGGER, delay, 'Del.del')
         result: tf.Tensor = conv1d(inputs, delay)
         debug_tensor(LOGGER, result, 'Del.rslt')
