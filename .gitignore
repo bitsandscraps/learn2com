@@ -1,6 +1,7 @@
 Pipfile.lock
 log
 model
+*.html
 
 # Created by https://www.gitignore.io/api/emacs,python
 

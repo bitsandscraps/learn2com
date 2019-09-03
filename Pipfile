@@ -4,9 +4,9 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-tensorflow = {path = "/home/wisrl/tensorflow/tensorflow_pkg_gpu/tensorflow-1.10.1-cp36-cp36m-linux_x86_64.whl"}
 argparse = "*"
 "h5py" = "*"
+tensorflow_my = {path = "/home/wisrl/tensorflow/tensorflow_pkg/tensorflow-1.11.0-cp36-cp36m-linux_x86_64.whl"}
 
 [dev-packages]
 pylint = "*"
